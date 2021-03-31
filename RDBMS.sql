@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS `datawarehouse`.`date_dimension` (
   `Date` INT NULL DEFAULT NULL,
   `Month` INT NULL DEFAULT NULL,
   `Year` INT NULL DEFAULT NULL,
-  `Quater` INT NULL DEFAULT NULL,
+  `Quarter` INT NULL DEFAULT NULL,
   PRIMARY KEY (`DateKey`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
@@ -128,18 +128,16 @@ CREATE TABLE IF NOT EXISTS `datawarehouse`.`loan_dimension` (
   INDEX `fk_loan_dimension_loan_started_date_dimension1_idx` (`LoanStartedDateKey` ASC) VISIBLE,
   CONSTRAINT `fk_loan_dimension_loan_started_date_dimension1`
     FOREIGN KEY (`LoanStartedDateKey`)
-    REFERENCES `datawarehouse`.`loan_started_date_dimension` (`LoanStartedDateKey`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
+    REFERENCES `datawarehouse`.`loan_started_date_dimension` (`LoanStartedDateKey`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
--- Table `datawarehouse`.`monthly_loan_snapshot_facts`
+-- Table `datawarehouse`.`loan_transaction_facts`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `datawarehouse`.`monthly_loan_snapshot_facts` (
+CREATE TABLE IF NOT EXISTS `datawarehouse`.`loan_transaction_facts` (
   `DateKey` VARCHAR(45) NOT NULL,
   `BranchKey` VARCHAR(45) NOT NULL,
   `CategoryKey` VARCHAR(45) NOT NULL,
@@ -154,41 +152,41 @@ CREATE TABLE IF NOT EXISTS `datawarehouse`.`monthly_loan_snapshot_facts` (
   INDEX `fk_monthly_loan_snapshot_facts_customer_dimension1_idx` (`CustomerKey` ASC) VISIBLE,
   INDEX `fk_monthly_loan_snapshot_facts_customer_demographic_dimensi_idx` (`CustomerDemographicKey` ASC) VISIBLE,
   INDEX `fk_monthly_loan_snapshot_facts_loan_dimension1_idx` (`LoanKey` ASC) VISIBLE,
-  CONSTRAINT `fk_monthly_loan_snapshot_facts_date_dimension`
-    FOREIGN KEY (`DateKey`)
-    REFERENCES `datawarehouse`.`date_dimension` (`DateKey`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
   CONSTRAINT `fk_monthly_loan_snapshot_facts_branch_dimension1`
     FOREIGN KEY (`BranchKey`)
-    REFERENCES `datawarehouse`.`branch_dimension` (`BranchKey`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_monthly_loan_snapshot_facts_loan_category_dimension1`
-    FOREIGN KEY (`CategoryKey`)
-    REFERENCES `datawarehouse`.`loan_category_dimension` (`CategoryKey`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_monthly_loan_snapshot_facts_customer_dimension1`
-    FOREIGN KEY (`CustomerKey`)
-    REFERENCES `datawarehouse`.`customer_dimension` (`CustomerKey`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
+    REFERENCES `datawarehouse`.`branch_dimension` (`BranchKey`),
   CONSTRAINT `fk_monthly_loan_snapshot_facts_customer_demographic_dimension1`
     FOREIGN KEY (`CustomerDemographicKey`)
-    REFERENCES `datawarehouse`.`customer_demographic_dimension` (`CustomerDemographicKey`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
+    REFERENCES `datawarehouse`.`customer_demographic_dimension` (`CustomerDemographicKey`),
+  CONSTRAINT `fk_monthly_loan_snapshot_facts_customer_dimension1`
+    FOREIGN KEY (`CustomerKey`)
+    REFERENCES `datawarehouse`.`customer_dimension` (`CustomerKey`),
+  CONSTRAINT `fk_monthly_loan_snapshot_facts_date_dimension`
+    FOREIGN KEY (`DateKey`)
+    REFERENCES `datawarehouse`.`date_dimension` (`DateKey`),
+  CONSTRAINT `fk_monthly_loan_snapshot_facts_loan_category_dimension1`
+    FOREIGN KEY (`CategoryKey`)
+    REFERENCES `datawarehouse`.`loan_category_dimension` (`CategoryKey`),
   CONSTRAINT `fk_monthly_loan_snapshot_facts_loan_dimension1`
     FOREIGN KEY (`LoanKey`)
-    REFERENCES `datawarehouse`.`loan_dimension` (`LoanKey`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
+    REFERENCES `datawarehouse`.`loan_dimension` (`LoanKey`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
 USE `financialservice` ;
+
+-- -----------------------------------------------------
+-- Table `financialservice`.`branch`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `financialservice`.`branch` (
+  `BranchID` VARCHAR(45) NOT NULL,
+  `Address` VARCHAR(45) NULL DEFAULT NULL,
+  PRIMARY KEY (`BranchID`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
 
 -- -----------------------------------------------------
 -- Table `financialservice`.`customer`
@@ -208,18 +206,6 @@ COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
--- Table `financialservice`.`branch`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `financialservice`.`branch` (
-  `BranchID` VARCHAR(45) NOT NULL,
-  `Address` VARCHAR(45) NULL DEFAULT NULL,
-  PRIMARY KEY (`BranchID`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
-
-
--- -----------------------------------------------------
 -- Table `financialservice`.`account`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `financialservice`.`account` (
@@ -231,16 +217,12 @@ CREATE TABLE IF NOT EXISTS `financialservice`.`account` (
   PRIMARY KEY (`AccountID`),
   INDEX `fk_account_customer_idx` (`CustomerID` ASC) VISIBLE,
   INDEX `fk_account_branch1_idx` (`BranchID` ASC) VISIBLE,
-  CONSTRAINT `fk_account_customer`
-    FOREIGN KEY (`CustomerID`)
-    REFERENCES `financialservice`.`customer` (`ID`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
   CONSTRAINT `fk_account_branch1`
     FOREIGN KEY (`BranchID`)
-    REFERENCES `financialservice`.`branch` (`BranchID`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
+    REFERENCES `financialservice`.`branch` (`BranchID`),
+  CONSTRAINT `fk_account_customer`
+    FOREIGN KEY (`CustomerID`)
+    REFERENCES `financialservice`.`customer` (`ID`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
@@ -275,14 +257,10 @@ CREATE TABLE IF NOT EXISTS `financialservice`.`loan` (
   INDEX `fk_loan_loan_category1_idx` (`CategoryID` ASC) VISIBLE,
   CONSTRAINT `fk_loan_account1`
     FOREIGN KEY (`AccountID`)
-    REFERENCES `financialservice`.`account` (`AccountID`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
+    REFERENCES `financialservice`.`account` (`AccountID`),
   CONSTRAINT `fk_loan_loan_category1`
     FOREIGN KEY (`CategoryID`)
-    REFERENCES `financialservice`.`loan_category` (`CategoryID`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
+    REFERENCES `financialservice`.`loan_category` (`CategoryID`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
@@ -294,15 +272,14 @@ COLLATE = utf8mb4_0900_ai_ci;
 CREATE TABLE IF NOT EXISTS `financialservice`.`loan_transaction` (
   `TransactionID` VARCHAR(45) NOT NULL,
   `Date` DATETIME NULL DEFAULT NULL,
-  `Amount` INT NULL DEFAULT NULL,
+  `LoanAmount` INT NULL DEFAULT NULL,
+  `PaidAmount` INT NULL DEFAULT NULL,
   `LoanID` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`TransactionID`),
   INDEX `fk_loan_transaction_loan1_idx` (`LoanID` ASC) VISIBLE,
   CONSTRAINT `fk_loan_transaction_loan1`
     FOREIGN KEY (`LoanID`)
-    REFERENCES `financialservice`.`loan` (`LoanID`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
+    REFERENCES `financialservice`.`loan` (`LoanID`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;

@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS `datawarehouse`.`date_dimension` (
   `Date` INT NULL DEFAULT NULL,
   `Month` INT NULL DEFAULT NULL,
   `Year` INT NULL DEFAULT NULL,
-  `Quater` INT NULL DEFAULT NULL,
+  `Quarter` INT NULL DEFAULT NULL,
   PRIMARY KEY (`DateKey`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
@@ -120,18 +120,16 @@ CREATE TABLE IF NOT EXISTS `datawarehouse`.`loan_dimension` (
   INDEX `fk_loan_dimension_loan_started_date_dimension1_idx` (`LoanStartedDateKey` ASC) VISIBLE,
   CONSTRAINT `fk_loan_dimension_loan_started_date_dimension1`
     FOREIGN KEY (`LoanStartedDateKey`)
-    REFERENCES `datawarehouse`.`loan_started_date_dimension` (`LoanStartedDateKey`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
+    REFERENCES `datawarehouse`.`loan_started_date_dimension` (`LoanStartedDateKey`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
--- Table `datawarehouse`.`monthly_loan_snapshot_facts`
+-- Table `datawarehouse`.`loan_transaction_facts`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `datawarehouse`.`monthly_loan_snapshot_facts` (
+CREATE TABLE IF NOT EXISTS `datawarehouse`.`loan_transaction_facts` (
   `DateKey` VARCHAR(45) NOT NULL,
   `BranchKey` VARCHAR(45) NOT NULL,
   `CategoryKey` VARCHAR(45) NOT NULL,
@@ -146,36 +144,24 @@ CREATE TABLE IF NOT EXISTS `datawarehouse`.`monthly_loan_snapshot_facts` (
   INDEX `fk_monthly_loan_snapshot_facts_customer_dimension1_idx` (`CustomerKey` ASC) VISIBLE,
   INDEX `fk_monthly_loan_snapshot_facts_customer_demographic_dimensi_idx` (`CustomerDemographicKey` ASC) VISIBLE,
   INDEX `fk_monthly_loan_snapshot_facts_loan_dimension1_idx` (`LoanKey` ASC) VISIBLE,
-  CONSTRAINT `fk_monthly_loan_snapshot_facts_date_dimension`
-    FOREIGN KEY (`DateKey`)
-    REFERENCES `datawarehouse`.`date_dimension` (`DateKey`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
   CONSTRAINT `fk_monthly_loan_snapshot_facts_branch_dimension1`
     FOREIGN KEY (`BranchKey`)
-    REFERENCES `datawarehouse`.`branch_dimension` (`BranchKey`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_monthly_loan_snapshot_facts_loan_category_dimension1`
-    FOREIGN KEY (`CategoryKey`)
-    REFERENCES `datawarehouse`.`loan_category_dimension` (`CategoryKey`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_monthly_loan_snapshot_facts_customer_dimension1`
-    FOREIGN KEY (`CustomerKey`)
-    REFERENCES `datawarehouse`.`customer_dimension` (`CustomerKey`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
+    REFERENCES `datawarehouse`.`branch_dimension` (`BranchKey`),
   CONSTRAINT `fk_monthly_loan_snapshot_facts_customer_demographic_dimension1`
     FOREIGN KEY (`CustomerDemographicKey`)
-    REFERENCES `datawarehouse`.`customer_demographic_dimension` (`CustomerDemographicKey`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
+    REFERENCES `datawarehouse`.`customer_demographic_dimension` (`CustomerDemographicKey`),
+  CONSTRAINT `fk_monthly_loan_snapshot_facts_customer_dimension1`
+    FOREIGN KEY (`CustomerKey`)
+    REFERENCES `datawarehouse`.`customer_dimension` (`CustomerKey`),
+  CONSTRAINT `fk_monthly_loan_snapshot_facts_date_dimension`
+    FOREIGN KEY (`DateKey`)
+    REFERENCES `datawarehouse`.`date_dimension` (`DateKey`),
+  CONSTRAINT `fk_monthly_loan_snapshot_facts_loan_category_dimension1`
+    FOREIGN KEY (`CategoryKey`)
+    REFERENCES `datawarehouse`.`loan_category_dimension` (`CategoryKey`),
   CONSTRAINT `fk_monthly_loan_snapshot_facts_loan_dimension1`
     FOREIGN KEY (`LoanKey`)
-    REFERENCES `datawarehouse`.`loan_dimension` (`LoanKey`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
+    REFERENCES `datawarehouse`.`loan_dimension` (`LoanKey`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
