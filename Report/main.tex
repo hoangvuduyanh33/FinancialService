@@ -80,6 +80,7 @@ Khách hàng sẽ lựa chọn một trong các gói cho vay. Sau đó cung cấ
 như trong gói vay. Các giao dịch thu nợ sẽ được ngân hàng ghi lại. Khi một khách hàng không có khả năng
 trả nợ, khoản nợ đó bị gọi là nợ xấu. Khách hàng bị nợ xấu sẽ gặp nhiều khó khăn khi vay tiền ở tổ chức tài chính khác.\\
 
+\subsection{Các vấn đề cần giải quyết}
 Mục đích của ta là xây dựng kho dữ liệu, qua đó giải quyết một số vấn đề sau:
 \begin{itemize}
     \setlength\itemsep{0.3em}
@@ -99,7 +100,7 @@ Mục đích của ta là xây dựng kho dữ liệu, qua đó giải quyết m
     \item \textbf{Branch:} Chi nhánh ngân hàng
     \item \textbf{LoanCatergory:} Gói vay
     \item \textbf{Loan:} Khoản vay của khách hàng
-    \item \textbf{LoanTransaction:} Bản ghi của các giao dịch thu nợ
+    \item \textbf{LoanTransaction:} Bản ghi của các giao dịch liên quan đến khoản vay
 \end{itemize}
 \subsubsection{Xác định thuộc tính}
 \begin{itemize}
@@ -232,10 +233,100 @@ Ta xây dựng các bảng với các cột như sau:
 \end{itemize}
 \subsubsection{Lược đồ cơ sở dữ liệu}
 \begin{center}
-    \includegraphics[scale=0.5]{DBDiagram.png}
+    \includegraphics[scale=0.5]{ERDiagram.jpg}
 \end{center}
 
 \subsection{Thu thập dữ liệu và thêm dữ liệu vào cơ sở dữ liệu}
 Việc cài đặt được thực hiện trên hệ quản trị cơ sở dữ liệu quan hệ MySQL server.
+
+\section{Xây dựng kho dữ liệu}
+\subsection{Chuyển đổi cơ sở dữ liệu sang kho dữ liệu}
+\subsubsection{Lựa chọn quy trình nghiệp vụ}
+Quy trình nghiệp vụ mà ta muốn cải tiến là nghiệp vụ cho vay.
+\subsubsection{Định nghĩa mức độ chi tiết}
+Mỗi dòng của bảng fact tương ứng với một giao dịch liên quan đến khoản vay.
+\subsubsection{Xác định các dimensions}
+\begin{itemize}
+    \item \textbf{date dimension.} Dimension biểu diễn thời gian chính xác đến ngày, có các thuộc tính sau:
+    \begin{itemize}
+        \item \textbf{DateKey:} Mã ngày.
+        \item \textbf{Date:} Thể hiện giá trị ngày, kiểu int, nhận giá trị 1 đến 31.
+        \item \textbf{Month:} Thể hiện giá trị tháng, kiểu int, nhận giá trị từ 1 đến 12.
+        \item \textbf{Quarter:} Thể hiện giá trị quý, kiểu int, nhận giá trị từ 1 đến 4.
+        \item \textbf{Year:} Thể hiện giá trị năm, kiểu int.
+    \end{itemize}
+    \item \textbf{customer dimension}. Dimension biểu diễn thông tin của khách hàng, có các thuộc tính sau:
+    \begin{itemize}
+        \item \textbf{CustomerKey:} Mã khách hàng. Kiểu varchar.
+        \item \textbf{Name:} Tên khách hàng. Kiểu varchar.
+        \item \textbf{DOB:} Ngày sinh của khách hàng. Kiểu datetime.
+        \item \textbf{Province:} Tên tỉnh thành khách hàng đang sống.
+        \item \textbf{City:} Thành phố nơi khách hàng đang sống.
+        \item \textbf{Street:} Tên đường nơi khách hàng đang sống.
+    \end{itemize}
+    \item \textbf{customer demographic dimension}. Dimension biểu diễn thông tin thường xuyên thay đổi của khách hàng. 
+    \begin{itemize}
+        \item \textbf{CustomerDemographicKey:} Khóa chính của bảng. Kiểu varchar.
+        \item \textbf{AgeBand:} Khoảng tuổi của khách hàng. Giá trị int. 
+        \item \textbf{IncomeBand:} Khoảng thu nhập của khách hàng. Kiểu int.
+        \item \textbf{MaritalStatus:} Trạng thái hôn nhân. Kiểu int.
+        \item \textbf{IsEmployed:} Đang có công việc hay không. Kiểu boolean.
+    \end{itemize}
+    \item \textbf{branch dimension}. Dimension biểu diễn thông tin chi nhánh nơi khách hàng nộp hồ sơ khoản vay.
+    \begin{itemize}
+        \item \textbf{BranchKey:} Mã chi nhánh. Kiểu varchar.
+        \item \textbf{Province:} Tên tỉnh thành. Kiểu varchar.
+        \item \textbf{City:} Tên thành phố. Kiểu varchar.
+        \item \textbf{Street:} Tên đường. Kiểu varchar.
+    \end{itemize}
+    \item \textbf{loan category dimension:}
+    \begin{itemize}
+        \item \textbf{CategoryKey:} Mã gói vay. Kiểu varchar.
+        \item \textbf{Lifespan:} Kì hạn vay. Kiểu int.
+        \item \textbf{Rate:} Lãi suất cho vay. Kiểu double.
+        \item \textbf{Purpose:} Mục đích sử dụng vốn. Kiểu varchar.
+        \item \textbf{IsSecured:} Khoản vay có tài sản thế chấp không. Kiểu boolean.
+    \end{itemize}
+    
+    \item \textbf{loan started date dimension:}
+    \begin{itemize}
+        \item \textbf{LoanStartedDateKey:} Mã số ngày bắt đầu vay.
+        \item \textbf{LoanStartedDate:} Ngày bắt đầu vay.
+        \item \textbf{LoanStartedMonth:} Tháng bắt đầu vay.
+        \item \textbf{LoanStartedYear:} Năm bắt đầu vay.
+        \item \textbf{LoanStartedQuater:} Quý bắt đầu vay.
+    \end{itemize}
+    
+    \item \textbf{loan dimension:} 
+    \begin{itemize}
+        \item \textbf{LoanKey:} Mã khoản vay
+        \item \textbf{AvailableAmount:} Số tiền vay khả dụng của khách hàng.
+        \item \textbf{LoanStartedDateKey:} Khóa ngoại đến loan started date dimension. 
+    \end{itemize}
+\end{itemize}
+\subsubsection{Xác định facts}
+    Bảng fact cung cấp thông tin về lượng tiền vay và lượng tiền. 
+    \textbf{loan transaction fact}:
+    \begin{itemize}
+        \item \textbf{DateKey:} Khóa ngoại đến DateDimension.
+        \item \textbf{BranchKey:} Khóa ngoại đến BranchDimension.
+        \item \textbf{CategoryKey:} Khóa ngoại đến CategoryDimension.
+        \item \textbf{CustomerKey:} Khóa ngoại đến Customer.
+        \item \textbf{CustomerDemographicKey:} Khóa ngoại đến CustomerDemographic.
+        \item \textbf{RepaidAmount:} Số tiền trả lãi cho ngân hàng. Kiểu INT.
+        \item \textbf{LoanAmount:} Lượng tiền khách hàng vay trong tháng.
+
+    \end{itemize}
+    
+\subsubsection{Mô hình kho dữ liệu.}
+\begin{center}
+    \includegraphics[scale=0.4]{DatawarehouseSchema.png}
+\end{center}
+\newpage
+\section{Khai thác dữ liệu}
+\subsection{Các câu hỏi mang tính thống kê.}
+\subsection{Các câu hỏi dự báo.}
+
+\section{Trích dân}
 
 \end{document}
