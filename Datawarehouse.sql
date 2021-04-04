@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS `datawarehouse`.`branch_dimension` (
   `BranchKey` VARCHAR(45) NOT NULL,
   `Street` VARCHAR(45) NULL DEFAULT NULL,
   `City` VARCHAR(45) NULL DEFAULT NULL,
-  `Province` VARCHAR(45) NULL DEFAULT NULL,
+  `Province` VARCHAR(100) CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_0900_ai_ci' NULL DEFAULT NULL,
   PRIMARY KEY (`BranchKey`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS `datawarehouse`.`customer_demographic_dimension` (
   `AgeBand` INT NULL DEFAULT NULL,
   `IncomeBand` INT NULL DEFAULT NULL,
   `MaritalStatus` INT NULL DEFAULT NULL,
-  `IsEmployed` VARCHAR(45) NULL,
+  `IsEmployed` TINYINT NULL,
   PRIMARY KEY (`CustomerDemographicKey`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS `datawarehouse`.`date_dimension` (
   `Date` INT NULL DEFAULT NULL,
   `Month` INT NULL DEFAULT NULL,
   `Year` INT NULL DEFAULT NULL,
-  `Quater` INT NULL DEFAULT NULL,
+  `Quarter` INT NULL DEFAULT NULL,
   PRIMARY KEY (`DateKey`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
@@ -97,7 +97,7 @@ CREATE TABLE IF NOT EXISTS `datawarehouse`.`loan_started_date_dimension` (
   `LoanStartedDate` INT NULL DEFAULT NULL,
   `LoanStartedMonth` INT NULL DEFAULT NULL,
   `LoanStartedYear` INT NULL DEFAULT NULL,
-  `LoanStartedQuater` INT NULL DEFAULT NULL,
+  `LoanStartedQuarter` INT NULL DEFAULT NULL,
   PRIMARY KEY (`LoanStartedDateKey`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
@@ -131,8 +131,7 @@ CREATE TABLE IF NOT EXISTS `datawarehouse`.`loan_transaction_facts` (
   `CustomerKey` VARCHAR(45) NOT NULL,
   `CustomerDemographicKey` VARCHAR(45) NOT NULL,
   `LoanKey` VARCHAR(45) NOT NULL,
-  `RepaidAmount` INT NULL DEFAULT NULL,
-  `LoanAmount` INT NULL DEFAULT NULL,
+  `Amount` INT NULL DEFAULT NULL,
   INDEX `fk_monthly_loan_snapshot_facts_date_dimension_idx` (`DateKey` ASC) VISIBLE,
   INDEX `fk_monthly_loan_snapshot_facts_branch_dimension1_idx` (`BranchKey` ASC) VISIBLE,
   INDEX `fk_monthly_loan_snapshot_facts_loan_category_dimension1_idx` (`CategoryKey` ASC) VISIBLE,
